@@ -7,7 +7,6 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
-import UIKit
 
 struct FolderView: View {
     @ObservedObject var service: FileManagerService
@@ -59,12 +58,12 @@ struct FolderView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button("Nuwe Gids") { showingNewFolder = true }
-                    Button("Laai Lêer") { showingImporter = true }
+                    Button("New Folder") { showingNewFolder = true }
+                    Button("Import File") { showingImporter = true }
                     Divider()
-                    Picker("Sorteer op", selection: $sortMode) {
-                        Label("Naam", systemImage: "textformat").tag(SortMode.name)
-                        Label("Datum", systemImage: "calendar").tag(SortMode.date)
+                    Picker("Sort by", selection: $sortMode) {
+                        Label("Name", systemImage: "textformat").tag(SortMode.name)
+                        Label("Date", systemImage: "calendar").tag(SortMode.date)
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -73,7 +72,7 @@ struct FolderView: View {
             }
         }
         .sheet(isPresented: $showingNewFolder) {
-            NewFolderSheet(title: "Nuwe Gids", placeholder: "Naam") {
+            NewFolderSheet(title: "New Folder", placeholder: "Name") {
                 service.createFolder(named: $0)
             }
         }
@@ -105,8 +104,8 @@ struct FolderView: View {
                 Label(item.name, systemImage: "folder.fill")
             }
             .contextMenu {
-                Button("Hernoem") { renameTarget = item }
-                Button("Verwyder", role: .destructive) {
+                Button("Rename") { renameTarget = item }
+                Button("Delete", role: .destructive) {
                     service.delete(item: item)
                 }
             }
@@ -122,13 +121,13 @@ struct FolderView: View {
                 Button("Open") { shareURL = item.id }
                 Button("Share") { shareURL = item.id }
                 if item.id.pathExtension.lowercased().contains("xls") {
-                    Button("Stuur as PDF") {
-                        // stub: no-op for now
+                    Button("Send as PDF") {
+                        // no-op stub
                     }
                 }
                 Button("Duplicate") { service.duplicate(item: item) }
-                Button("Hernoem") { renameTarget = item }
-                Button("Verwyder", role: .destructive) {
+                Button("Rename") { renameTarget = item }
+                Button("Delete", role: .destructive) {
                     service.delete(item: item)
                 }
             }
@@ -136,12 +135,12 @@ struct FolderView: View {
                 Button(role: .destructive) {
                     service.delete(item: item)
                 } label: {
-                    Label("Verwyder", systemImage: "trash")
+                    Label("Delete", systemImage: "trash")
                 }
                 Button {
                     renameTarget = item
                 } label: {
-                    Label("Hernoem", systemImage: "pencil")
+                    Label("Rename", systemImage: "pencil")
                 }
                 .tint(.orange)
             }

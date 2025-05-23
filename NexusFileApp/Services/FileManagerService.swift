@@ -14,27 +14,24 @@ class FileManagerService: ObservableObject {
     private let documentsURL: URL
     private(set) var currentURL: URL
 
-    /// Your six required top-level categories
+    /// Your six required top-level categories in English
     private let defaultCategories = [
-        "Spuitprogramme",
+        "Spray Programs",
         "MRL",
-        "Etikette",
-        "Kalibrasies",
-        "Aanbevelings",
-        "Gewas Inligting"
+        "Labels",
+        "Calibrations",
+        "Recommendations",
+        "Crop Information"
     ]
 
     init(startingAt url: URL? = nil) {
-        // Base Documents directory
         let docs = fileManager
             .urls(for: .documentDirectory, in: .userDomainMask)
             .first!
         self.documentsURL = docs
         self.currentURL = url ?? docs
 
-        // Seed your six main folders
         ensureDefaultCategories()
-        // Then load currentURL items
         loadItems()
     }
 
@@ -43,10 +40,8 @@ class FileManagerService: ObservableObject {
             let folderURL = documentsURL.appendingPathComponent(name, isDirectory: true)
             var isDir: ObjCBool = false
             if !fileManager.fileExists(atPath: folderURL.path, isDirectory: &isDir) {
-                try? fileManager.createDirectory(
-                    at: folderURL,
-                    withIntermediateDirectories: false
-                )
+                try? fileManager.createDirectory(at: folderURL,
+                                                 withIntermediateDirectories: false)
             }
         }
     }
@@ -54,17 +49,16 @@ class FileManagerService: ObservableObject {
     func loadItems() {
         let keys: [URLResourceKey] = [.isDirectoryKey]
         guard let urls = try? fileManager.contentsOfDirectory(
-                at: currentURL,
-                includingPropertiesForKeys: keys,
-                options: [.skipsHiddenFiles]
+            at: currentURL,
+            includingPropertiesForKeys: keys,
+            options: [.skipsHiddenFiles]
         ) else {
             items = []
             return
         }
 
-        items = urls.map(DirectoryItem.init)
+        items = urls.map { DirectoryItem(id: $0) }
             .sorted {
-                // directories first
                 if $0.isDirectory && !$1.isDirectory { return true }
                 if !$0.isDirectory && $1.isDirectory { return false }
                 return $0.name.localizedStandardCompare($1.name) == .orderedAscending
@@ -77,16 +71,15 @@ class FileManagerService: ObservableObject {
 
     func createFolder(named name: String) {
         let newURL = currentURL.appendingPathComponent(name, isDirectory: true)
-        try? fileManager.createDirectory(at: newURL,
-                                         withIntermediateDirectories: false)
+        try? fileManager.createDirectory(at: newURL, withIntermediateDirectories: false)
         loadItems()
     }
 
     func importFile(from url: URL) {
         let dest = currentURL.appendingPathComponent(url.lastPathComponent)
-        if fileManager.fileExists(atPath: dest.path) {
-            try? fileManager.removeItem(at: dest)
-        }
+        try? (fileManager.fileExists(atPath: dest.path)
+            ? fileManager.removeItem(at: dest)
+            : ())
         try? fileManager.copyItem(at: url, to: dest)
         loadItems()
     }
@@ -97,21 +90,19 @@ class FileManagerService: ObservableObject {
     }
 
     func rename(item: DirectoryItem, to newName: String) {
-        let newURL = item.id
-            .deletingLastPathComponent()
+        let newURL = item.id.deletingLastPathComponent()
             .appendingPathComponent(newName, isDirectory: item.isDirectory)
         try? fileManager.moveItem(at: item.id, to: newURL)
         loadItems()
     }
 
-    /// Duplicate by appending “ copy” to filename before the extension
     func duplicate(item: DirectoryItem) {
-        let original = item.id
-        let base = original.deletingPathExtension().lastPathComponent
-        let ext  = original.pathExtension
+        let originalURL = item.id
+        let base = originalURL.deletingPathExtension().lastPathComponent
+        let ext = originalURL.pathExtension
         let copyName = "\(base) copy.\(ext)"
-        let dest = currentURL.appendingPathComponent(copyName)
-        try? fileManager.copyItem(at: original, to: dest)
+        let destURL = currentURL.appendingPathComponent(copyName)
+        try? fileManager.copyItem(at: originalURL, to: destURL)
         loadItems()
     }
 }

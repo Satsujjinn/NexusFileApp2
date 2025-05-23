@@ -4,6 +4,7 @@
 //
 //  Created by Theunis Jordaan on 2025/05/19.
 //
+
 import SwiftUI
 
 struct HomeView: View {
@@ -30,8 +31,8 @@ struct HomeView: View {
                             CategoryCard(name: item.name)
                         }
                         .contextMenu {
-                            Button("Hernoem") { renameTarget = item }
-                            Button("Verwyder", role: .destructive) {
+                            Button("Rename") { renameTarget = item }
+                            Button("Delete", role: .destructive) {
                                 fm.delete(item: item)
                             }
                         }
@@ -40,7 +41,7 @@ struct HomeView: View {
                 .padding()
             }
             .background(Color.nexusBackground.ignoresSafeArea())
-            .navigationTitle("Kategorieë")
+            .navigationTitle("Categories")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -52,8 +53,8 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingNew) {
                 NewFolderSheet(
-                    title: "Nuwe Kategorieë",
-                    placeholder: "Naam"
+                    title: "New Category",
+                    placeholder: "Name"
                 ) { name in
                     fm.createFolder(named: name)
                 }

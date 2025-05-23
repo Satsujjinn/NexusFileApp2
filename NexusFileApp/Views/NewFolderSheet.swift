@@ -24,10 +24,10 @@ struct NewFolderSheet: View {
             }
             .navigationTitle(title)
             .navigationBarItems(
-                leading: Button("Kanselleer") {
+                leading: Button("Cancel") {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("Skep") {
+                trailing: Button("Create") {
                     onCreate(name.trimmingCharacters(in: .whitespaces))
                     presentationMode.wrappedValue.dismiss()
                 }

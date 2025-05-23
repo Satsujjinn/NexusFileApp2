@@ -23,16 +23,16 @@ struct RenameSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Hernoem")) {
-                    TextField("Nuwe naam", text: $newName)
+                Section(header: Text("Rename")) {
+                    TextField("New name", text: $newName)
                 }
             }
-            .navigationTitle("Hernoem")
+            .navigationTitle("Rename")
             .navigationBarItems(
-                leading: Button("Kanselleer") {
+                leading: Button("Cancel") {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("Stoor") {
+                trailing: Button("Save") {
                     onRename(newName.trimmingCharacters(in: .whitespaces))
                     presentationMode.wrappedValue.dismiss()
                 }
