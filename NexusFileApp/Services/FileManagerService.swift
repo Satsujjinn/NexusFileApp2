@@ -5,7 +5,6 @@
 //  Created by Theunis Jordaan on 2025/05/19.
 //
 
-//  FileManagerService.swift
 import Foundation
 
 class FileManagerService: ObservableObject {
@@ -15,90 +14,104 @@ class FileManagerService: ObservableObject {
     private let documentsURL: URL
     private(set) var currentURL: URL
 
+    /// Your six required top-level categories
+    private let defaultCategories = [
+        "Spuitprogramme",
+        "MRL",
+        "Etikette",
+        "Kalibrasies",
+        "Aanbevelings",
+        "Gewas Inligting"
+    ]
+
     init(startingAt url: URL? = nil) {
-        // base Documents directory
+        // Base Documents directory
         let docs = fileManager
             .urls(for: .documentDirectory, in: .userDomainMask)
             .first!
         self.documentsURL = docs
         self.currentURL = url ?? docs
+
+        // Seed your six main folders
+        ensureDefaultCategories()
+        // Then load currentURL items
         loadItems()
     }
 
-    /// Load & sort both folders and files
+    private func ensureDefaultCategories() {
+        for name in defaultCategories {
+            let folderURL = documentsURL.appendingPathComponent(name, isDirectory: true)
+            var isDir: ObjCBool = false
+            if !fileManager.fileExists(atPath: folderURL.path, isDirectory: &isDir) {
+                try? fileManager.createDirectory(
+                    at: folderURL,
+                    withIntermediateDirectories: false
+                )
+            }
+        }
+    }
+
     func loadItems() {
         let keys: [URLResourceKey] = [.isDirectoryKey]
-        guard let urls = try? fileManager
-                .contentsOfDirectory(
-                  at: currentURL,
-                  includingPropertiesForKeys: keys,
-                  options: [.skipsHiddenFiles]
-                ) else {
+        guard let urls = try? fileManager.contentsOfDirectory(
+                at: currentURL,
+                includingPropertiesForKeys: keys,
+                options: [.skipsHiddenFiles]
+        ) else {
             items = []
             return
         }
 
-        items = urls.map { DirectoryItem(id: $0) }
+        items = urls.map(DirectoryItem.init)
             .sorted {
+                // directories first
                 if $0.isDirectory && !$1.isDirectory { return true }
                 if !$0.isDirectory && $1.isDirectory { return false }
                 return $0.name.localizedStandardCompare($1.name) == .orderedAscending
             }
     }
 
-    /// Create a brand-new service rooted at this subfolder
     func navigate(to item: DirectoryItem) -> FileManagerService {
-        return FileManagerService(startingAt: item.id)
+        FileManagerService(startingAt: item.id)
     }
 
-    /// Make a new folder
     func createFolder(named name: String) {
         let newURL = currentURL.appendingPathComponent(name, isDirectory: true)
-        do {
-            try fileManager.createDirectory(
-              at: newURL,
-              withIntermediateDirectories: false)
-            loadItems()
-        } catch {
-            print("Error creating folder:", error)
-        }
+        try? fileManager.createDirectory(at: newURL,
+                                         withIntermediateDirectories: false)
+        loadItems()
     }
 
-    /// Copy in a PDF/XLSX from the picker
     func importFile(from url: URL) {
         let dest = currentURL.appendingPathComponent(url.lastPathComponent)
-        do {
-            if fileManager.fileExists(atPath: dest.path) {
-                try fileManager.removeItem(at: dest)
-            }
-            try fileManager.copyItem(at: url, to: dest)
-            loadItems()
-        } catch {
-            print("Error importing file:", error)
+        if fileManager.fileExists(atPath: dest.path) {
+            try? fileManager.removeItem(at: dest)
         }
+        try? fileManager.copyItem(at: url, to: dest)
+        loadItems()
     }
 
-    /// Delete any file or folder
     func delete(item: DirectoryItem) {
-        do {
-            try fileManager.removeItem(at: item.id)
-            loadItems()
-        } catch {
-            print("Error deleting item:", error)
-        }
+        try? fileManager.removeItem(at: item.id)
+        loadItems()
     }
 
-    /// Rename by moving to a new URL
     func rename(item: DirectoryItem, to newName: String) {
         let newURL = item.id
             .deletingLastPathComponent()
-            .appendingPathComponent(newName,
-                                   isDirectory: item.isDirectory)
-        do {
-            try fileManager.moveItem(at: item.id, to: newURL)
-            loadItems()
-        } catch {
-            print("Error renaming item:", error)
-        }
+            .appendingPathComponent(newName, isDirectory: item.isDirectory)
+        try? fileManager.moveItem(at: item.id, to: newURL)
+        loadItems()
+    }
+
+    /// Duplicate by appending “ copy” to filename before the extension
+    func duplicate(item: DirectoryItem) {
+        let original = item.id
+        let base = original.deletingPathExtension().lastPathComponent
+        let ext  = original.pathExtension
+        let copyName = "\(base) copy.\(ext)"
+        let dest = currentURL.appendingPathComponent(copyName)
+        try? fileManager.copyItem(at: original, to: dest)
+        loadItems()
     }
 }

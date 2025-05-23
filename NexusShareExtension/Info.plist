@@ -7,7 +7,18 @@
 		<key>NSExtensionAttributes</key>
 		<dict>
 			<key>NSExtensionActivationRule</key>
-			<string>TRUEPREDICATE</string>
+			<string>&lt;key&gt;NSExtensionActivationRule&lt;/key&gt;
+&lt;dict&gt;
+  &lt;key&gt;NSExtensionActivationSupportsAttachmentsWithMinCount&lt;/key&gt;
+  &lt;integer&gt;1&lt;/integer&gt;
+  &lt;key&gt;NSExtensionActivationSupportsAttachmentsWithMaxCount&lt;/key&gt;
+  &lt;integer&gt;1&lt;/integer&gt;
+  &lt;key&gt;NSExtensionActivationSupportsAttachmentsWithTypes&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;public.data&lt;/string&gt;
+  &lt;/array&gt;
+&lt;/dict&gt;
+</string>
 		</dict>
 		<key>NSExtensionMainStoryboard</key>
 		<string>MainInterface</string>
