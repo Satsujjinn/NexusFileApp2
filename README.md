@@ -20,10 +20,7 @@ NexusFileApp provides a Files-like interface to organize, import, preview, and s
 
 ## Screenshots
 
-*Include screenshots in the `screenshots/` folder and reference them here.*
 
-![Home Screen](./screenshots/home.png)
-![Folder View](./screenshots/folder.png)
 
 ## Installation
 
